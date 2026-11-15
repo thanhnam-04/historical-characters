@@ -5,7 +5,9 @@ import { DragonLipSync, createBodyOnlyClip } from './assets/DragonLipSync.js';
 
 export class DragonAvatar {
   constructor(){
-    this.host=document.querySelector('#view');this.speaking=false;this.motion=false;this.dirty=true;this.frames=0;
+    this.host=document.querySelector('#view');this.stage=this.host?.closest('.dragon-stage');this.destroyed=false;
+    if(!this.host||!this.stage)throw new Error('Dragon stage is unavailable.');
+    this.speaking=false;this.motion=false;this.dirty=true;this.frames=0;
     this.last=0;this.lastShape='viseme_sil';this.settleUntil=0;this.mobile=matchMedia('(max-width:720px)').matches;
     this.scene=new THREE.Scene();
     this.camera=new THREE.PerspectiveCamera(33,1,.005,30);
@@ -24,8 +26,9 @@ export class DragonAvatar {
     this.tick=this.tick.bind(this);this.raf=requestAnimationFrame(this.tick);
     this.load();
   }
-  invalidate(){this.dirty=true;}
-  resize(){const {width,height}=this.host.getBoundingClientRect();if(!width||!height)return;
+  setUi(selector,property,value){if(this.destroyed||!this.stage?.isConnected)return;const element=this.stage.querySelector(selector);if(element)element[property]=value;}
+  invalidate(){if(!this.destroyed)this.dirty=true;}
+  resize(){if(this.destroyed||!this.host.isConnected)return;const {width,height}=this.host.getBoundingClientRect();if(!width||!height)return;
     const scale=Math.min(1,1200/width,1000/height);this.renderer.setSize(Math.round(width*scale),Math.round(height*scale),false);
     this.camera.aspect=width/height;this.camera.updateProjectionMatrix();this.invalidate();
   }
@@ -37,25 +40,25 @@ export class DragonAvatar {
     this.scene.add(this.root);this.root.updateMatrixWorld(true);this.lip=new DragonLipSync(this.root);
     this.mixer=new THREE.AnimationMixer(this.root);const clip=gltf.animations.find(c=>c.name==='MOTION');
     if(clip)this.action=this.mixer.clipAction(createBodyOnlyClip(clip));
-    this.viewHead();this.ready=true;document.querySelector('#loading').hidden=true;
-    document.querySelector('#avatarState').textContent='Long Vân đang ở đây';this.invalidate();
+    this.viewHead();this.ready=true;this.setUi('#loading','hidden',true);
+    this.setUi('#avatarState','textContent','Long Vân đang ở đây');this.invalidate();
     window.dispatchEvent(new CustomEvent('avatar-ready'));
-  },e=>{if(!this.destroyed&&e.total){const n=Math.round(e.loaded/e.total*100);document.querySelector('#loadingText').textContent=`Đang đánh thức rồng… ${n}%`;document.querySelector('#loadProgress').value=n;}},()=>{
+  },e=>{if(!this.destroyed&&e.total){const n=Math.round(e.loaded/e.total*100);this.setUi('#loadingText','textContent',`Đang đánh thức rồng… ${n}%`);this.setUi('#loadProgress','value',n);}},()=>{
     if(this.destroyed)return;
-    document.querySelector('#loadingText').textContent='Chưa tải được rồng 3D';document.querySelector('#loading small').textContent='Thử tải lại trang. Chat vẫn dùng được khi đã kết nối AI.';
-    document.querySelector('#loading .loader').hidden=true;document.querySelector('#loadProgress').hidden=true;document.querySelector('#avatarState').textContent='Chưa tải được mô hình';
+    this.setUi('#loadingText','textContent','Chưa tải được rồng 3D');this.setUi('#loading small','textContent','Thử tải lại trang. Chat vẫn dùng được khi đã kết nối AI.');
+    this.setUi('#loading .loader','hidden',true);this.setUi('#loadProgress','hidden',true);this.setUi('#avatarState','textContent','Chưa tải được mô hình');
   });}
   viewHead(){this.fullView=false;this.camera.position.set(.48,1.48,1.2);this.controls.target.set(-.06,1.34,.1);this.controls.update();this.invalidate();}
   viewBody(){this.fullView=true;this.camera.position.set(1.05,1.04,2.9);this.controls.target.set(0,.9,0);this.controls.update();this.invalidate();}
   toggleCamera(){this.fullView?this.viewHead():this.viewBody();}
-  destroy(){this.destroyed=true;cancelAnimationFrame(this.raf);this.resizeObserver.disconnect();document.removeEventListener('visibilitychange',this.visibilityHandler);this.controls.dispose();this.mixer?.stopAllAction();const textures=new Set();this.scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of [o.material].flat()){for(const value of Object.values(m))if(value?.isTexture)textures.add(value);m.dispose();}}});for(const t of textures)t.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+  destroy(){if(this.destroyed)return;this.destroyed=true;this.speaking=false;this.analyser=null;cancelAnimationFrame(this.raf);this.resizeObserver.disconnect();document.removeEventListener('visibilitychange',this.visibilityHandler);this.controls.dispose();this.mixer?.stopAllAction();const textures=new Set();this.scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();for(const m of [o.material].flat()){for(const value of Object.values(m))if(value?.isTexture)textures.add(value);m.dispose();}}});for(const t of textures)t.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
   toggleMotion(){this.motion=!this.motion;if(this.action){if(this.motion)this.action.reset().play();else{this.action.stop();this.mixer.update(0);}}this.invalidate();return this.motion;}
   beginSpeech(analyser=null){if(this.destroyed)return;this.speaking=true;this.analyser=analyser;this.started=performance.now();this.lastShape='';
-    if(analyser)this.wave=new Uint8Array(analyser.fftSize);document.querySelector('#avatarState').textContent='Long Vân đang nói';
-    document.querySelector('#mouthLabel').textContent=analyser?'Miệng theo âm lượng':'Khẩu hình mô phỏng';this.invalidate();}
+    if(analyser)this.wave=new Uint8Array(analyser.fftSize);this.setUi('#avatarState','textContent','Long Vân đang nói');
+    this.setUi('#mouthLabel','textContent',analyser?'Miệng theo âm lượng':'Khẩu hình mô phỏng');this.invalidate();}
   endSpeech(){if(this.destroyed)return;this.speaking=false;this.analyser=null;this.lip?.setViseme('viseme_sil');this.settleUntil=performance.now()+450;
-    document.querySelector('#avatarState').textContent=this.ready?'Long Vân đang ở đây':'Đang tải mô hình';document.querySelector('#mouthLabel').textContent='Rồng 3D tương tác';this.invalidate();}
-  tick(now){this.raf=requestAnimationFrame(this.tick);if(document.hidden)return;
+    this.setUi('#avatarState','textContent',this.ready?'Long Vân đang ở đây':'Đang tải mô hình');this.setUi('#mouthLabel','textContent','Rồng 3D tương tác');this.invalidate();}
+  tick(now){if(this.destroyed)return;this.raf=requestAnimationFrame(this.tick);if(document.hidden)return;
     if(now-this.last<1000/30)return;const dt=Math.min(.1,(now-(this.last||now-33))/1000);
     this.last=now;
     if(this.motion)this.mixer?.update(dt);

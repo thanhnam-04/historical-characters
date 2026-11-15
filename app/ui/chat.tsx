@@ -18,7 +18,7 @@ export default function Chat({ me, conversation, archived, notify, onCreate, onR
     const activeId = useRef<string | null>(null), abort = useRef<AbortController | null>(null), epoch = useRef(0), bottom = useRef<HTMLDivElement>(null), voice = useRef<VoicePlayer | null>(null), avatar = useRef<any>(null), recognition = useRef<any>(null);
     const avatarReady = useCallback((a: any) => { avatar.current = a; if (voice.current)
         voice.current.avatar = a; }, []);
-    useEffect(() => { voice.current = new VoicePlayer(avatar.current, setPlaying); const speech = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition; if (speech) {
+    useEffect(() => { const player = new VoicePlayer(avatar.current, setPlaying); voice.current = player; const speech = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition; if (speech) {
         const r = new speech();
         r.lang = 'vi-VN';
         r.interimResults = true;
@@ -29,7 +29,7 @@ export default function Chat({ me, conversation, archived, notify, onCreate, onR
         r.onerror = (e: any) => { setListening(false); notify(e.error === 'not-allowed' ? 'Hãy cấp quyền micro cho trang web.' : e.error === 'network' ? 'Nhận giọng nói cần kết nối mạng. Bạn có thể gõ tin nhắn.' : 'Chưa nhận được giọng nói. Thử lại hoặc gõ tin nhắn.'); };
         recognition.current = r;
     } const hidden = () => { if (document.hidden)
-        recognition.current?.stop(); }; document.addEventListener('visibilitychange', hidden); return () => { epoch.current++; abort.current?.abort(); recognition.current?.abort(); voice.current?.stop(); document.removeEventListener('visibilitychange', hidden); }; }, []);
+        recognition.current?.stop(); }; document.addEventListener('visibilitychange', hidden); return () => { epoch.current++; abort.current?.abort(); if (recognition.current) { recognition.current.onstart = recognition.current.onresult = recognition.current.onend = recognition.current.onerror = null; recognition.current.abort(); } player.dispose(); if (voice.current === player) voice.current = null; document.removeEventListener('visibilitychange', hidden); }; }, []);
     useEffect(() => { const id = conversation?.id || null; if (id === activeId.current) {
         if (conversation)
             setTitle(conversation.title);
@@ -53,7 +53,7 @@ export default function Chat({ me, conversation, archived, notify, onCreate, onR
         notify((e as Error).message);
     } }
     async function send(text = input) {
-        if(archived&&!conversation){notify('Ch?n m?t h?i tho?i ?? l?u tr? ?? xem l?i.');return;}
+        if(archived&&!conversation){notify('Chọn một hội thoại đã lưu trữ để xem lại.');return;}
         if (busy || loading || !text.trim())
             return;
         if (!me.config.ready) {

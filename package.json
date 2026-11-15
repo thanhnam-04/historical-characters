@@ -13,7 +13,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "db:init": "node scripts/init-local.mjs",
-    "test": "node --test tests/backend.test.mjs tests/voice-lifecycle.test.mjs",
+    "test": "node --test tests/backend.test.mjs tests/voice-lifecycle.test.mjs tests/admin-resource.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

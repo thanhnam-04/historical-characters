@@ -1,0 +1,12 @@
+import {existsSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs';
+import {randomBytes} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import path from 'node:path';
+import './sites-env.mjs';
+if(!existsSync('.dev.vars'))writeFileSync('.dev.vars',`APP_SECRET=${randomBytes(48).toString('hex')}\nAUTH_MODE=password\nOWNER_EMAIL=owner@example.com\n`,{mode:0o600});
+mkdirSync('.sites-runtime',{recursive:true});
+const configPath=path.resolve('.sites-runtime/local-d1.json');
+writeFileSync(configPath,JSON.stringify({name:'long-van-local',compatibility_date:'2026-05-15',d1_databases:[{binding:'DB',database_name:'site-creator-d1',database_id:'00000000-0000-4000-8000-000000000000',migrations_dir:path.resolve('drizzle')}]}));
+const result=spawnSync(process.execPath,['node_modules/wrangler/bin/wrangler.js','d1','migrations','apply','DB','--local','--config',configPath,'--persist-to',path.resolve('.wrangler/state')],{stdio:'inherit'});
+if(result.status!==0)process.exit(result.status||1);
+console.log('Local database ready. Start the web and create the first admin at /login. No default password is installed.');

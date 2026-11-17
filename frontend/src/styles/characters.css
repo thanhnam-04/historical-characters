@@ -1,0 +1,252 @@
+.character-stage {
+  isolation: isolate;
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    #f9fcf5 0%,
+    #e7f0e2 52%,
+    #dce9d8 100%
+  );
+  min-height: 420px;
+}
+.character-stage-heading {
+  position: absolute;
+  left: 28px;
+  top: 25px;
+  right: 70px;
+  z-index: 2;
+  pointer-events: none;
+}
+.character-stage-heading h1 {
+  font-size: 32px;
+  font-weight: 550;
+  letter-spacing: -1px;
+  margin: 10px 0 5px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.character-stage-heading h1 span {
+  color: #92aa72;
+  font-size: 19px;
+}
+.character-stage-heading p {
+  font-size: 12px;
+  color: #6c8067;
+  margin: 0;
+}
+.character-stage #view {
+  position: absolute;
+  inset: 90px 0 68px;
+  width: auto;
+  height: auto;
+}
+.character-stage #view canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.character-floor {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: 15%;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #a4bd9470, transparent 68%);
+  border: 1px solid #b9ceb040;
+  transform: rotate(-6deg);
+  pointer-events: none;
+}
+.character-stage .stage-tools {
+  top: 22px;
+  right: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 4;
+}
+.character-stage .stage-tools .icon-btn {
+  background: #ffffffb3;
+  border: 1px solid #dce6d5;
+  width: 36px;
+  height: 36px;
+}
+.character-stage .avatar-caption {
+  bottom: 49px;
+  max-width: calc(100% - 30px);
+  font-size: 10px;
+  z-index: 3;
+}
+.character-stage .stage-footer {
+  bottom: 18px;
+  font-size: 10px;
+  z-index: 3;
+}
+.character-stage .stage-footer button {
+  font-size: 10px;
+}
+.character-stage .loading {
+  left: 50%;
+  top: 50%;
+  max-width: 80%;
+}
+.character-error {
+  position: absolute;
+  inset: 40% 15% auto;
+  text-align: center;
+  z-index: 5;
+  background: #fffffff0;
+  border: 1px solid #e1e7d9;
+  padding: 20px;
+  border-radius: 14px;
+  font-size: 12px;
+}
+.character-stage:fullscreen {
+  border-radius: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-height: none;
+}
+.character-manager {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.85fr) minmax(0, 1.5fr);
+  gap: 24px;
+  align-items: start;
+}
+.character-preview {
+  position: sticky;
+  top: 20px;
+  min-width: 0;
+}
+.character-preview .dragon-stage {
+  height: 510px;
+  border-radius: 18px;
+  border: 1px solid #dce6d5;
+}
+.character-preview > .panel {
+  margin-top: 16px;
+}
+.character-manager h2 {
+  font-size: 19px;
+  margin: 12px 0;
+}
+.character-manager p {
+  font-size: 12px;
+  color: #78876f;
+  line-height: 1.8;
+}
+.model-file {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 135px;
+  border: 1px dashed #9db68e;
+  border-radius: 12px;
+  background: #f5f8f0;
+  padding: 18px;
+  overflow: hidden;
+  text-align: center;
+  cursor: pointer;
+}
+.model-file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.model-file strong {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  font-size: 12px;
+}
+.model-file span {
+  font-size: 11px;
+  font-weight: 400;
+}
+.model-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+}
+.model-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #e4eadf;
+  border-radius: 11px;
+  text-align: left;
+  min-width: 0;
+}
+.model-option.selected {
+  background: #edf4e7;
+  border-color: #91ac7f;
+}
+.model-option > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+}
+.model-option strong {
+  display: block;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.model-option small {
+  display: block;
+  color: #819174;
+  margin-top: 5px;
+  font-size: 10px;
+}
+.model-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+@media (max-width: 900px) {
+  .character-manager {
+    grid-template-columns: 1fr;
+  }
+  .character-preview {
+    position: static;
+  }
+  .character-preview .dragon-stage {
+    height: 440px;
+  }
+  .character-stage {
+    min-height: 320px;
+  }
+  .character-stage-heading h1 {
+    font-size: 26px;
+  }
+  .character-stage-heading {
+    left: 23px;
+    top: 22px;
+  }
+  .character-stage #view {
+    inset: 85px 0 70px;
+  }
+}
+@media (max-width: 650px) {
+  .character-stage-heading p {
+    font-size: 10px;
+  }
+  .character-stage .avatar-caption {
+    font-size: 8px;
+    bottom: 48px;
+  }
+  .character-stage .stage-footer,
+  .character-stage .stage-footer button {
+    font-size: 8px;
+  }
+  .character-stage .stage-tools .icon-btn {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.character-stage [hidden] {
+  display: none !important;
+}

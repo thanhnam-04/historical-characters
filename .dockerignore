@@ -1,0 +1,11 @@
+**/node_modules
+**/.venv
+**/.env
+**/data
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.runtime
+**/.git
+backups

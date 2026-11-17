@@ -1,94 +1,151 @@
-# Long Vân — web đầy đủ cho admin và user
+# Historical Characters — React JavaScript + Python
 
-Ứng dụng React/Vinext có backend API, database SQLite/D1, phân quyền admin/user, chat OpenRouter và voice với rồng Three.js. Code này thay thế bản frontend tĩnh trước đó.
+Frontend dùng **React với JavaScript/JSX và Vite**. Backend dùng **Python/FastAPI**,
+SQLite và HTTPX. Không có backend Node.js, Next.js, Vinext hoặc mã TypeScript.
+Node.js chỉ dùng để phát triển, build và kiểm thử giao diện.
 
-## Chạy trên Windows
+Dự án nằm tại `C:\Users\ADMIN\Downloads\nhan vat lich su\historical-characters`.
+Mã nguồn giao diện nằm trong `frontend/src`; backend Python nằm trong `backend/app`.
 
-1. Cài Node.js 24 LTS nếu máy chưa có. Máy đang thực hiện dự án đã có Node tại `C:\Program Files\nodejs\node.exe`.
-2. Mở `start-web.cmd`. Lần đầu script tự cài dependency, sinh `.dev.vars` và áp dụng migration database cục bộ.
-3. Mở **http://127.0.0.1:8767/login**.
-4. Tạo tài khoản quản trị đầu tiên bằng email, tên và mật khẩu ít nhất 12 ký tự. Không có mật khẩu mặc định.
-5. Trong **Quản trị → Cấu hình AI**, nhập OpenRouter API key, chọn model rồi lưu.
-6. Dùng trình duyệt khác hoặc cửa sổ riêng tư để đăng ký user và kiểm tra luồng người dùng.
+## Chạy trên máy
 
-Database cục bộ nằm trong `.wrangler/state`. Giữ lại thư mục đó để bảo toàn tài khoản và hội thoại. `.dev.vars` chứa `APP_SECRET`; giữ nguyên cùng database vì secret này dùng để băm mật khẩu và mã hóa API key. Các file này không được commit hoặc đưa vào bản phát hành.
+Mở `start-web.cmd`, giữ cửa sổ đó chạy và vào:
 
-## Bản Sites hiện tại
+- Website: http://127.0.0.1:8767/login
+- API tương tác: http://127.0.0.1:8767/docs
+- Kiểm tra server: http://127.0.0.1:8767/api/health
 
-https://long-van-dragon-chat.quynhnphe182286.chatgpt.site
+Python phục vụ cả API và bản React đã build trên cùng cổng 8767. Bản bàn giao đã
+cài môi trường Python và build sẵn frontend. Máy mới cần Python 3.10+; lần đầu
+chạy có thể cần tải thư viện. Nếu chưa có `frontend/dist`, cần thêm Node.js 22.13+
+để script tự build giao diện.
 
-Bản hosted giữ đăng nhập ChatGPT và quyền riêng tư của Site. Tài khoản chủ Site được cấu hình qua `OWNER_EMAIL` làm admin gốc. Các tài khoản khác được cấp quyền user; admin có thể tạo trước tài khoản theo email hoặc sửa vai trò. Muốn người khác mở được link hosted, chủ Site còn cần cấp quyền truy cập ở Sites. Phân quyền trong ứng dụng và quyền mở Site là hai lớp khác nhau.
+Database nằm ở `backend/data/app.sqlite3`; biến môi trường nằm ở `backend/.env`.
+Khi có database cũ, **giữ nguyên APP_SECRET** để đọc mật khẩu và key đã mã hóa.
+Không commit `.env`, database hoặc bản sao lưu lên Git. Tài khoản, phiên đăng
+nhập, cấu hình và lịch sử từ bản cũ đã chuyển sang backend Python. Sau khi dọn
+bản cũ, bản sao lưu gọn nằm ở `backups/database.sqlite3` và `backups/backend.env`.
 
-`AUTH_MODE=chatgpt` dùng danh tính do Sites cấp. `AUTH_MODE=password` bật email/mật khẩu, mặc định cho bản chạy trên máy. Không đưa server dùng chế độ ChatGPT ra Internet ngoài Sites gateway vì chế độ đó tin cậy các header danh tính do gateway cung cấp. Mã mô phỏng đăng nhập của starter chỉ hoạt động ở loopback trong chế độ dev và bị loại khỏi bản production.
-
-## Luồng user
-
-- Đăng ký/đăng nhập, đổi tên hiển thị, đổi mật khẩu ở bản email/mật khẩu, đăng xuất.
-- Tạo hội thoại, gửi tin nhắn và nhận câu trả lời streaming. Hội thoại được lưu theo tài khoản.
-- Nhập tiếng Việt bằng micro nếu trình duyệt hỗ trợ Web Speech Recognition; xem lại nội dung trước khi gửi.
-- Nghe câu trả lời hoặc dừng giọng đọc. Audio OpenRouter điều khiển khẩu hình theo âm lượng; giọng trình duyệt dùng khẩu hình mô phỏng theo thời gian.
-- Đổi tên hội thoại, lưu trữ/khôi phục, xuất JSON, xem hạn mức và 50 yêu cầu AI gần nhất.
-
-## Luồng admin
-
-- Tổng quan người dùng, hội thoại, số yêu cầu/lỗi trong 24 giờ và biểu đồ 7 ngày.
-- Tìm, tạo người dùng; gán admin/user; khóa/mở khóa; đổi hạn mức; thu hồi phiên đăng nhập.
-- Cấp link đặt mật khẩu dùng một lần, hiệu lực một giờ ở bản email/mật khẩu. **Chưa tích hợp gửi email tự động**: admin sao chép và chuyển link riêng cho người nhận.
-- Cấu hình API key, model chat/TTS, mã giọng, system prompt, lời chào, độ dài câu trả lời, hạn mức cho user mới, bật/tắt đăng ký và voice.
-- Tra cứu hội thoại để hỗ trợ. Mỗi lần admin xem nội dung được ghi vào nhật ký; người dùng được thông báo về quyền truy cập này trong phần thông tin của rồng.
-- Xem 100 thao tác quản trị gần nhất. Không thể hạ quyền hoặc khóa admin gốc, hoặc tự khóa/hạ quyền chính mình.
-
-## Backend và dữ liệu
-
-```mermaid
-flowchart LR
-    U[User hoặc Admin] --> UI[React / Three.js]
-    UI --> API[Backend API cùng domain]
-    API --> AUTH[Đăng nhập + CSRF + phân quyền]
-    AUTH --> DB[(SQLite / Cloudflare D1)]
-    API --> OR[OpenRouter Chat / TTS]
-```
-
-- `app/ui/`: trang đăng nhập, không gian user và admin.
-- `app/api/[...path]/route.ts`: cổng API Vinext.
-- `server/api.mjs`: xác thực, quyền truy cập, hội thoại, gọi AI, hạn mức và quản trị.
-- `server/crypto.mjs`: băm mật khẩu có salt/pepper, hash session token, mã hóa AES-GCM cho API key.
-- `db/schema.ts`, `drizzle/`: schema và migration.
-- `public/dragon/`: model và module Three.js. Model khoảng 18 MiB; render tối đa 30 fps khi hoạt động, nghỉ thì chỉ vẽ khi cần.
-- `tests/backend.test.mjs`: kiểm tra tích hợp backend trên SQLite thật, giả lập giao thức OpenRouter.
-
-API key chỉ được admin gửi đến backend khi cấu hình. Backend mã hóa rồi lưu; API đọc cấu hình chỉ trả trạng thái có/chưa có key. Browser user không gọi trực tiếp OpenRouter. Session email/mật khẩu dùng cookie HttpOnly, SameSite=Lax, Secure khi chạy HTTPS; token lưu dưới dạng hash. Các lệnh ghi dữ liệu kiểm tra Origin và CSRF. Mọi truy cập hội thoại đều kiểm tra chủ sở hữu ở backend.
-
-Hạn mức tính mỗi yêu cầu chat hoặc TTS, theo ngày ở múi giờ Việt Nam. Yêu cầu gặp lỗi dịch vụ được hoàn lại lượt. Mỗi user chỉ có một yêu cầu AI chạy đồng thời. Chế độ chỉ model miễn phí được bật sẵn; không tự chuyển sang model trả phí.
-
-## API chính
-
-| API | Quyền |
-| --- | --- |
-| `GET /api/auth/status`, `POST /api/auth/setup,register,login,reset` | Luồng xác thực, tùy AUTH_MODE |
-| `GET /api/me`, `POST /api/auth/logout` | Đã đăng nhập |
-| `PATCH /api/profile`, `POST /api/profile/password` | Chính chủ |
-| `GET/POST /api/conversations` | Hội thoại của chính chủ |
-| `GET/PATCH/DELETE /api/conversations/:id` | Chính chủ; DELETE là lưu trữ |
-| `POST /api/conversations/:id/messages` | Chính chủ; SSE streaming |
-| `GET /api/conversations/:id/export` | Chính chủ |
-| `POST /api/tts`, `GET /api/usage` | Đã đăng nhập; hạn mức cá nhân |
-| `/api/admin/overview,users,config,models,conversations,audit` | Admin; kiểm tra server |
-
-## Kiểm tra và build
+## Cấu trúc để sửa code
 
 ```text
-npm run typecheck
+frontend/
+  src/
+    components/          # Rồng Three.js dùng trong React
+    features/auth/       # Đăng nhập, đăng ký, đặt mật khẩu
+    features/chat/       # ChatPage, hook xử lý chat, voice và view tin nhắn
+    features/admin/      # Trang quản trị và các panel riêng
+    features/profile/    # Hồ sơ, mật khẩu, lượt sử dụng
+    layouts/             # Khung ứng dụng, sidebar, menu
+    services/api.js      # HTTP client, lỗi kết nối và CSRF
+    hooks/               # Hook dùng chung
+    utils/               # Điều hướng và kiểm tra dữ liệu quản trị
+    styles/app.css       # CSS đã định dạng, gồm giao diện mobile
+  public/dragon/         # GLB có khẩu hình, bộ điều khiển và Three.js
+backend/
+  app/
+    main.py              # Factory ứng dụng, middleware, static files
+    api/                 # Router: auth, profile, conversations, admin
+    schemas.py           # Pydantic kiểm tra dữ liệu đầu vào
+    services/            # Nghiệp vụ auth, chat/TTS, cấu hình, hạn mức
+    repositories/        # Truy vấn tài khoản và hội thoại
+    core/                # Cấu hình, mã hóa, lỗi ứng dụng
+    database.py          # Kết nối SQLite và transaction
+    schema.sql           # Bảng và index
+  tests/                 # API, phân quyền, quota, crypto, streaming
+scripts/
+  run.py                 # Khởi động toàn bộ web
+  backup.py              # Sao lưu SQLite nhất quán
+```
+
+Ví dụ: đổi cách gọi OpenRouter ở `backend/app/services/openrouter.py`, đổi luồng
+chat ở `frontend/src/features/chat/useChatController.js`, sửa form AI ở
+`frontend/src/features/admin/components/AIConfigForm.jsx`.
+
+## Phát triển
+
+Mở terminal thứ nhất ở `backend`:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python.exe -m uvicorn app.main:create_app --factory --reload --host 127.0.0.1 --port 8767
+```
+
+Mở terminal thứ hai ở `frontend`:
+
+```powershell
+npm ci
+npm run dev
+```
+
+Vào http://127.0.0.1:5173. Vite chuyển `/api` đến Python ở cổng 8767. Khi sửa
+giao diện để chạy bằng `start-web.cmd`, chạy lại `npm run build` trong `frontend`.
+
+## Luồng đã có
+
+- Lần đầu khởi tạo admin qua localhost; đăng ký, đăng nhập, đăng xuất.
+- Cookie HttpOnly, CSRF, kiểm tra Origin, mật khẩu PBKDF2 có pepper, key AES-GCM.
+- User: chat streaming, dừng tạo câu trả lời, lịch sử phân trang, đổi tên,
+  lưu trữ/khôi phục, xuất toàn bộ JSON, hồ sơ, đổi mật khẩu, xem lượt dùng.
+- Voice: nhập giọng nói qua SpeechRecognition tiếng Việt, đọc bằng OpenRouter
+  TTS hoặc speechSynthesis của trình duyệt; dừng/nghe lại, đồng bộ khẩu hình.
+- Admin: thống kê, tìm/tạo/sửa tài khoản, vai trò, khóa, hạn mức, link đặt mật
+  khẩu một lần, thu hồi phiên, cấu hình AI, tìm model miễn phí, thử kết nối và
+  giọng đọc, xem hội thoại và nhật ký truy cập/thay đổi.
+- Hạn mức dùng chung cho chat và TTS; lỗi nhà cung cấp được hoàn lượt. Mỗi user
+  chỉ có một yêu cầu AI đang chạy. Không tự chuyển sang model trả phí.
+
+Link đặt lại mật khẩu do admin gửi riêng; chưa tích hợp dịch vụ gửi email.
+SpeechRecognition phụ thuộc trình duyệt và quyền micro. SpeechSynthesis phụ
+thuộc giọng được cài trên máy. Khẩu hình theo âm lượng/thời gian là gần đúng.
+Tình trạng miễn phí và khả năng đáp ứng của model do OpenRouter quyết định.
+
+## Kiểm tra
+
+```powershell
+# Trong backend
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m ruff check app tests
+.\.venv\Scripts\python.exe -m ruff format --check app tests
+# Trong frontend
+npm run lint
 npm test
 npm run build
 ```
 
-Các kiểm tra tự động dùng SQLite thật để kiểm tra đăng nhập, session, CSRF, ngăn nâng quyền, cách ly hội thoại, cấu hình server, streaming tiếng Việt, TTS, khóa yêu cầu đồng thời, hoàn lượt khi lỗi, reset mật khẩu, khóa tài khoản và bảo vệ admin gốc. Giao thức OpenRouter được giả lập; chưa có API key thật nên chưa đánh giá giọng tiếng Việt hoặc độ trễ model thực tế. Công cụ xem trước trong ứng dụng hiện không kết nối; giao diện chưa được kiểm tra trực quan bằng trình duyệt của trợ lý. Luồng HTTP thực tế trên localhost đã được kiểm tra riêng.
+Test dùng SQLite tạm, key giả và OpenRouter giả lập; không dùng key thật, không
+tính phí. React được mount bằng jsdom để kiểm tra tab admin, retry, form,
+streaming và lifecycle voice. Kiểm tra này không thay thế việc nghe loa, cấp
+quyền micro và xem WebGL trên thiết bị thực.
 
-## Triển khai Sites
+## Sao lưu
 
-`.openai/hosting.json` giữ nguyên project ID, khai báo `d1: DB`. Backend build thành `dist/server/index.js`; Sites áp dụng migration khi deploy. Runtime cần `APP_SECRET` (bí mật, ít nhất 32 ký tự), `AUTH_MODE`, `OWNER_EMAIL`. Có thể cấu hình `OPENROUTER_API_KEY` làm secret runtime thay cho key mã hóa trong database; khi dùng biến môi trường này, xóa key trong UI không xóa được biến môi trường.
+```powershell
+backend\.venv\Scripts\python.exe scripts\backup.py
+```
 
-## Tài sản và giấy phép
+Giữ riêng cả file database lẫn `backend/.env`. Khi phục hồi, dừng server rồi
+đặt database vào `backend/data/app.sqlite3` và khôi phục đúng `.env` đi kèm.
 
-Mô hình gốc **Dragon Character 3D by OSCAR CREATIVO**: https://sketchfab.com/3d-models/dragon-character-3d-by-oscar-creativo-7bad9ad76293430f8e5bb24cd499c53b . Giấy phép **CC BY-NC 4.0**, dùng phi thương mại: https://creativecommons.org/licenses/by-nc/4.0/ . Bản trang đã chỉnh texture và thêm khẩu hình. File GLB gốc của bạn không bị ghi đè. Three.js 0.180.0 dùng MIT; xem `public/dragon/vendor/LICENSE.three.txt`.
+## Đưa lên server
+
+Backend này cần môi trường chạy Python. Link Sites/Cloudflare Worker của bản
+trước không chạy FastAPI; bản Python chạy ở địa chỉ local hoặc host Python riêng.
+Dockerfile đã có để đóng gói lên VPS hoặc nền tảng hỗ trợ container:
+
+```powershell
+docker build -t historical-characters .
+docker run --rm -p 127.0.0.1:8767:8767 --env-file backend/.env -v "${PWD}/backend/data:/app/backend/data" historical-characters
+```
+
+Ví dụ trên dùng local và chưa cần HTTPS. Khi dùng domain công khai, cấu hình
+`PUBLIC_ORIGIN=https://domain-cua-ban`, reverse proxy HTTPS và volume lưu SQLite.
+Khởi tạo admin ở localhost trước khi công khai. Docker cần được kiểm tra trên
+máy có Docker; không nằm trong kiểm thử local của lần bàn giao này.
+
+Mô hình rồng: OSCAR CREATIVO, CC BY-NC 4.0. Giữ phần ghi công trong giao diện;
+tài sản này dành cho mục đích phi thương mại.
+
+## Nhân vật 3D
+
+Vào Quản trị → Nhân vật 3D. Tải GLB 2.0 có texture nhúng (tối đa 100 MB), xem thử rồi bấm Áp dụng cho người dùng. File lưu trong `backend/data/models/`; cần sao lưu thư mục này cùng database và `.env`. Chỉ admin được tải/chọn/xóa mô hình. Không xóa được mô hình đang dùng hoặc rồng mặc định. Mô hình không có morph target vẫn hiển thị nhưng không tự có khẩu hình.
